@@ -1,35 +1,24 @@
-# week-3-assignment
-# Task API with SQLite
+# Task API with Postgres + Docker
 
-## Why SQLite
-SQLite was chosen because it requires no separate database server — it stores 
-all data in a single file (`tasks.db`), which makes it perfect for a small 
-project like this. The database and table are created automatically the 
-first time the app runs.
-
-## Database location
-The database file `tasks.db` is created automatically in the project root 
-the first time you run the app.
-
-## Library used
-This project uses Node's built-in `node:sqlite` module instead of 
-`better-sqlite3`, because `better-sqlite3` requires compiling native C++ 
-code with Visual Studio Build Tools, which wasn't available in this 
-environment. `node:sqlite` is a built-in module in Node.js 22+ and requires 
-no extra installation.
+## What changed from the SQLite version
+Only `db.js` changed to connect to Postgres instead of SQLite. All routes 
+in `index.js` use the same `db.query(...)` pattern with SQL, and the API's 
+URLs, request bodies, and responses are unchanged. This proves the 
+architecture: swapping storage is a one-file change.
 
 ## How to run
-npm install
-node index.js
+1. Copy `.env.example` to `.env`
+2. Run: docker compose up --build
+3. The app will be available at http://localhost:3000
 
-The server will start at http://localhost:3000
+## How persistence was proven
+1. Created a task via POST /tasks
+2. Stopped the containers (Ctrl+C)
+3. Restarted with docker compose up
+4. Called GET /tasks again — the task was still there, proving Postgres 
+   data survives both app and container restarts thanks to the Docker volume.
 
-## API Endpoints
-- GET /tasks — returns all tasks
-- GET /tasks/:id — returns a single task
-- POST /tasks — creates a new task (requires "title" in body)
-- PUT /tasks/:id — updates a task
-- DELETE /tasks/:id — deletes a task
-
-## Example SQL query
-SELECT * FROM tasks;
+## Stack
+- Node.js + Express
+- PostgreSQL (via Docker, with a persistent volume)
+- Connection string stored in .env (gitignored), shape documented in .env.example
